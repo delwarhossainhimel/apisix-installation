@@ -5,7 +5,7 @@ services:
     image: bitnami/etcd:3.4.9
     container_name: etcd
     environment:
-      - ETCD_ENABLE_V2=true
+            #  - ETCD_ENABLE_V2=true
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
         #      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
@@ -16,7 +16,7 @@ services:
       - etcd_data:/bitnami/etcd
 
   apisix:
-    image: apache/apisix:3.13.0-ubuntu
+    image: apache/apisix:2.13.0-alpine
     container_name: apisix
     depends_on:
       - etcd
@@ -33,7 +33,8 @@ services:
     restart: always
 
   apisix-dashboard:
-    image: apache/apisix-dashboard:3.0.1-centos
+          #    image: bitnami/apisix-dashboard:3-debian-12 
+    image: apache/apisix-dashboard:2.13.1-alpine
     container_name: apisix-dashboard
     depends_on:
       - etcd
@@ -42,6 +43,7 @@ services:
       - "9000:9000"
     volumes:
       - ./config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+            #      - ./config.yaml:/opt/bitnami/apisix-dashboard/conf/conf.yaml:ro
     restart: always
 
 volumes:
