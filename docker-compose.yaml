@@ -24,12 +24,15 @@ services:
       - "9080:9080"   # HTTP
       - "9443:9443"   # HTTPS
       - "9091:9091"   # Control API
-        #    environment:
-        #      - APISIX_DEPLOYMENT_ETCD_HOST=http://etcd:2379
-        #      - APISIX_DEPLOYMENT_ETCD_PREFIX=/apisix
+    environment:
+      K8S_HOST: "https://192.168.20.151:6443"
+      K8S_TOKEN_FILE: "/etc/k8s/sa.token"
+      K8S_CA_FILE: "/etc/k8s/ca.crt"
 
     volumes:
       - ./config-default.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./apisix-sa.token:/etc/k8s/sa.token:ro
+      - ./apisix-ca.crt:/etc/k8s/ca.crt:ro
     restart: always
 
   apisix-dashboard:
