@@ -1,0 +1,2 @@
+kubectl get secret $(kubectl get sa apisix-sa -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.token}' | base64 --decode > apisix-sa.token
+kubectl get secret $(kubectl get sa apisix-sa -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.ca\.crt}' | base64 --decode > apisix-ca.crt
