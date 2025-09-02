@@ -1,2 +1,3 @@
-kubectl get secret $(kubectl get sa apisix-sa -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.token}' | base64 --decode > apisix-sa.token
-kubectl get secret $(kubectl get sa apisix-sa -o jsonpath='{.secrets[0].name}') -o jsonpath='{.data.ca\.crt}' | base64 --decode > apisix-ca.crt
+kubectl create token apisix-sa --duration=87600h -n default > ./apisix/apisix-sa.token
+kubectl get secret $(kubectl get sa apisix-sa -n default -o jsonpath='{.secrets[0].name}') \
+  -n default -o jsonpath='{.data.ca\.crt}' | base64 --decode > ./apisix/apisix-ca.crt
