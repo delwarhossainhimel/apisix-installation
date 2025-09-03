@@ -30,6 +30,22 @@ deployment:
         key: 4054f7cf07e344346cd3f287985e76a2
         role: viewer
 
+discovery:
+  kubernetes:
+    service:
+      schema: https
+      host: "192.168.20.151"   # API server IP
+      port: "6443"
+    client:
+      token_file: /etc/k8s/sa.token
+      ssl_verify: true
+      ssl_ca_cert: /etc/k8s/ca.crt
+      server_name: "192.168.20.151"   # must match cert SAN
+#      server_name: "kubernetes.default.svc"   # must match cert SAN
+    default_weight: 50
+    namespace_selector:
+      equal: default
+
 etcd:
   host:                           # it's possible to define multiple etcd hosts addresses of the same etcd cluster.
     - "http://etcd:2379"          # multiple etcd address
@@ -40,11 +56,3 @@ plugin_attr:
     export_addr:
       ip: "0.0.0.0"
       port: 9091
-kubernetes:
-  # Kubernetes service discovery settings
-  discovery: "service"
-  service_namespace: "default"
-  service_name: ""  # optional if using individual upstream configs
-  k8s_host: "https://192.168.20.151:6443"
-  k8s_ca_file: "/etc/k8s/ca.crt"
-  k8s_token_file: "/etc/k8s/sa.token"
