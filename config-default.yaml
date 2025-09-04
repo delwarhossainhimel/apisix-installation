@@ -1,58 +1,67 @@
 apisix:
-  node_listen: 
-    - port: 9080              # APISIX listening port
-      #    - port: 9443
-      #      enable_ssl: true
-      #  enable_http2: true
+  # List of ports APISIX will listen on for HTTP traffic
+  node_listen:
+    - port: 9080                # HTTP
+
+  # Disable IPv6 support
   enable_ipv6: false
+
+  # SSL/TLS configuration
   ssl:
-    enable: true # Explicitly enables SSL functionality
+    enable: true                # Enable SSL functionality
     listen:
-      # This list defines the ports for encrypted traffic (HTTPS).
-      - port: 9443
-  enable_http2: true # Enables HTTP/2 for this specific SSL port
+      - port: 9443              # HTTPS listener port
+    ssl_protocols: TLSv1.2 TLSv1.3  # Allow TLS 1.2 and 1.3
+  enable_http2: true             # Enable HTTP/2 for HTTPS
+
+  # Control plane settings for APISIX dashboard or external monitoring
   enable_control: true
   control:
-    ip: "0.0.0.0"
+    ip: "0.0.0.0"               # Listen on all interfaces
     port: 9092
 
 deployment:
+  # Admin API configuration
   admin:
-    allow_admin:               # https://nginx.org/en/docs/http/ngx_http_access_module.html#allow
-      - 0.0.0.0/0              # We need to restrict ip access rules for security. 0.0.0.0/0 is for test.
-
+    allow_admin:
+      - 0.0.0.0/0               # Allow all IPs (for testing only)
     admin_key:
       - name: "admin"
         key: edd1c9f034335f136f87ad84b625c8f1
-        role: admin                 # admin: manage all configuration data
-
+        role: admin
       - name: "viewer"
         key: 4054f7cf07e344346cd3f287985e76a2
         role: viewer
 
+  # ETCD backend configuration
+  etcd:
+    host:
+      - "http://etcd:2379"
+    prefix: "/apisix"
+    timeout: 30
+
 discovery:
   kubernetes:
-    service:
-      schema: https
-      host: "192.168.20.151"   # API server IP
-      port: "6443"
-    client:
-      token_file: /etc/k8s/sa.token
-      ssl_verify: true
-      ssl_ca_cert: /etc/k8s/ca.crt
-      server_name: "192.168.20.151"   # must match cert SAN
-#      server_name: "kubernetes.default.svc"   # must match cert SAN
-    default_weight: 50
-    namespace_selector:
-      equal: default
+    - id: cluster1
+      service:
+        schema: https
+        host: "192.168.20.151"        # Kubernetes API server IP
+        port: "6443"
+      client:
+        token_file: /etc/k8s/sa.token  # Service account token
+        ssl_verify: true
+        ssl_ca_cert: /etc/k8s/ca.crt
+        server_name: "192.168.20.151"  # Must match Kubernetes API SAN
+      default_weight: 50
+      namespace_selector:
+        match: [".*"]                 # Select all namespaces
+      watch_endpoint_slices: true       # Enable endpoint slice watch
 
-etcd:
-  host:                           # it's possible to define multiple etcd hosts addresses of the same etcd cluster.
-    - "http://etcd:2379"          # multiple etcd address
-  prefix: "/apisix"               # apisix configurations prefix
-  timeout: 30 
 plugin_attr:
   prometheus:
     export_addr:
       ip: "0.0.0.0"
-      port: 9091
+      port: 9091                     # Prometheus metrics export port
+  tls:
+    cert_dir: /etc/apisix/ssl        # Directory for SSL certificates
+    auto_reload: true                 # Automatically reload certs on change
