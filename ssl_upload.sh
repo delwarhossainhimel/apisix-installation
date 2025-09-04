@@ -1,21 +1,25 @@
 #!/bin/bash
+set -euo pipefail
+shopt -s nullglob
 
 API_KEY="edd1c9f034335f136f87ad84b625c8f1"
 APISIX_API="http://127.0.0.1:9180/apisix/admin/ssls"
-CERT_DIR="/etc/ssl"
+CERT_DIR="/etc/apisix/ssl"
 
-# Get the highest existing ID in APISIX
-LAST_ID=$(curl -s "$APISIX_API" -H "X-API-KEY: $API_KEY" | jq '.list[].id' | sort -n | tail -1)
+# Debug
+echo "Checking existing SSL entries in APISIX..."
+curl -s "$APISIX_API" -H "X-API-KEY: $API_KEY" | jq .
+
+# Get last ID (adjust jq filter if needed)
+LAST_ID=$(curl -s "$APISIX_API" -H "X-API-KEY: $API_KEY" | jq '.list[].value.id' | sort -n | tail -1)
 if [ -z "$LAST_ID" ]; then
   LAST_ID=0
 fi
 
 NEW_ID=$((LAST_ID + 1))
 
-# Loop over all cert files
-for CERT in "$CERT_DIR"/*.{crt,pem}; do
-  [ -f "$CERT" ] || continue  # skip if no file
-
+# Loop over certs
+for CERT in "$CERT_DIR"/*.pem "$CERT_DIR"/*.crt; do
   BASENAME=$(basename "$CERT")
   NAME="${BASENAME%.*}"
 
@@ -48,5 +52,4 @@ EOF
   fi
 
   NEW_ID=$((NEW_ID + 1))
-
 done
