@@ -2,10 +2,10 @@ version: "3.8"
 
 services:
   etcd:
-    image: bitnami/etcd:3.4.9
+    image: bitnami/etcd:3.5.11
     container_name: etcd
     environment:
-            #  - ETCD_ENABLE_V2=true
+      - ETCD_ENABLE_V2=true
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
         #      - ETCD_ADVERTISE_CLIENT_URLS=http://0.0.0.0:2379
@@ -16,28 +16,26 @@ services:
       - etcd_data:/bitnami/etcd
 
   apisix:
-    image: apache/apisix:2.13.0-alpine
+          #    image: bitnami/apisix:3.13.0-debian-12-r4
+    image: apache/apisix:3.13.0-ubuntu
     container_name: apisix
     depends_on:
       - etcd
     ports:
-      - "9080:9080"   # HTTP
-      - "9443:9443"   # HTTPS
+      - "80:9080"   # HTTP
+      - "443:9443"   # HTTPS
       - "9091:9091"   # Control API
-    environment:
-      K8S_HOST: "https://192.168.20.151:6443"
-      K8S_TOKEN_FILE: "/etc/k8s/sa.token"
-      K8S_CA_FILE: "/etc/k8s/ca.crt"
-
     volumes:
+            #      - ./config-default.yaml:/opt/bitnami/apisix/conf/config.yaml:ro
       - ./config-default.yaml:/usr/local/apisix/conf/config.yaml:ro
       - ./apisix-sa.token:/etc/k8s/sa.token:ro
       - ./apisix-ca.crt:/etc/k8s/ca.crt:ro
+      - ./ssl/:/etc/apisix/ssl
     restart: always
 
   apisix-dashboard:
-          #    image: bitnami/apisix-dashboard:3-debian-12 
-    image: apache/apisix-dashboard:2.13.1-alpine
+          #    image: apache/apisix-dashboard:3.0.0-alpine
+    image: bitnami/apisix-dashboard:3.0.1-debian-12-r80
     container_name: apisix-dashboard
     depends_on:
       - etcd
@@ -45,8 +43,8 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      - ./config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
-            #      - ./config.yaml:/opt/bitnami/apisix-dashboard/conf/conf.yaml:ro
+#      - ./config.yaml:/usr/local/apisix-dashboard/conf/conf.yaml:ro
+      - ./config.yaml:/opt/bitnami/apisix-dashboard/conf/conf.yaml:ro
     restart: always
 
 volumes:
